@@ -45,6 +45,19 @@ module Discord
     end
   end
 
+  @[Flags]
+  enum MessageFlags : UInt8
+    Crossposted          = 1 << 0
+    IsCrosspost          = 1 << 1
+    SuppressEmbeds       = 1 << 2
+    SourceMessageDeleted = 1 << 3
+    Urgent               = 1 << 4
+
+    def self.new(pull : JSON::PullParser)
+      MessageFlags.new(pull.read_int.to_u8)
+    end
+  end
+
   class Message
     include JSON::Serializable
 
@@ -57,19 +70,26 @@ module Discord
     property member : PartialGuildMember?
     @[JSON::Field(converter: Discord::TimestampConverter)]
     property timestamp : Time
+    property edited_timestamp : Time?
     property tts : Bool
     property mention_everyone : Bool
     property mentions : Array(User)
     property mention_roles : Array(Snowflake)
+    property mention_channels : Array(Snowflake)?
     property attachments : Array(Attachment)
     property embeds : Array(Embed)
     property pinned : Bool?
     property reactions : Array(Reaction)?
     property nonce : String | Int64?
+    property webhook_id : Snowflake?
     property activity : Activity?
     property webhook_id : Snowflake?
     property thread : Channel?
     property referenced_message : Message?
+    property application : Application?
+    property message_reference : MessageReference?
+    property flags : MessageFlags?
+    property referenced_message : JSON::Any?
 
     def to_message_reference : MessageReference
       MessageReference.new(@id, @channel_id, @guild_id)
@@ -105,6 +125,16 @@ module Discord
 
     property type : ActivityType
     property party_id : String?
+  end
+
+  struct Application
+    include JSON::Serializable
+
+    property id : Snowflake
+    property cover_image : String?
+    property description : String
+    property icon : String?
+    property name : String
   end
 
   enum ChannelType : UInt8
@@ -150,6 +180,8 @@ module Discord
     property member_count : UInt32?
     property member : ThreadMember?
     property last_message_id : Snowflake?
+    @[JSON::Field(converter: Discord::TimestampConverter)]
+    property last_pin_timestamp : Time?
 
     # :nodoc:
     def initialize(private_channel : PrivateChannel)
@@ -368,5 +400,29 @@ module Discord
     property user_id : Snowflake?
     property join_timestamp : Time
     property flags : UInt32
+  end
+
+  struct MessageReference
+    include JSON::Serializable
+
+    property message_id : UInt64 | Snowflake?
+    property channel_id : UInt64 | Snowflake?
+    property guild_id : UInt64 | Snowflake?
+
+    def initialize(@message_id : UInt64 | Snowflake, @guild_id : UInt64 | Snowflake, @channel_id : UInt64 | Snowflake? = nil)
+    end
+  end
+
+  struct AllowedMentions
+    include JSON::Serializable
+
+    property parse : Array(String)?
+    property roles : Array(Snowflake) | Array(UInt64)?
+    property users : Array(Snowflake) | Array(UInt64)?
+    property replied_user : Bool
+
+    def initialize(@parse : Array(String)? = nil, @roles : Array(Snowflake) | Array(UInt64)? = nil,
+                   @users : Array(Snowflake) | Array(UInt64)? = nil, @replied_user : Bool = false)
+    end
   end
 end
