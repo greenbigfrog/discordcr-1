@@ -3,6 +3,8 @@ require "./user"
 require "./channel"
 require "./guild"
 
+require "./interaction"
+
 module Discord
   module Gateway
     struct ReadyPayload
@@ -469,6 +471,17 @@ module Discord
       property channel_ids : Array(Snowflake)?
       property threads : Array(Channel)
       property members : Array(ThreadMember)
+    end
+
+    struct ApplicationCommandPayload
+      include JSON::Serializable
+
+      property guild_id : Snowflake
+      property id : Snowflake
+      property application_id : Snowflake
+      property name : String
+      property description : String
+      property options : Array(ApplicationCommandOption)?
     end
   end
 end
