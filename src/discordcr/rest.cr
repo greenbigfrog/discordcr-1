@@ -351,7 +351,6 @@ module Discord
         headers,
         json
       )
-      pp response
 
       Channel.from_json(response.body)
     end
