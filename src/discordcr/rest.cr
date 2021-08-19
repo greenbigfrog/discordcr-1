@@ -1752,7 +1752,7 @@ module Discord
     end
 
     # Gets embed data for a guild. Requires the "Manage Guild" permission.
-    # TODO Did this move to /widget?
+    #
     # [API docs for this method](https://discord.com/developers/docs/resources/guild#get-guild-embed)
     def get_guild_embed(guild_id : UInt64 | Snowflake)
       response = request(
